@@ -1,16 +1,11 @@
 import json
-
 from django.core.management.base import BaseCommand
-
 from apps.language.models import Language
 from apps.repos.models import Repository, RepositoryLanguage, TopicsStars
 from apps.topics.models import Topic
 
-BATCH_SIZE = 5000
-
-
 class Command(BaseCommand):
-    help = "JSON import qilish"
+    help = "JSON fayldan maʼlumotlarni import qilish"
 
     def add_arguments(self, parser):
         parser.add_argument("json_path", type=str, help="JSON fayl manzili")
@@ -20,65 +15,53 @@ class Command(BaseCommand):
 
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            repos = []
 
             for repo_data in data:
-                owner, _ = Repository.objects.get_or_create(username=repo_data.get("owner"))
-                primary_lang, _ = Language.objects.get_or_create(
-                    name=repo_data.get("primaryLanguage")
-                )
                 repo = Repository(
-                    owner=owner,
+                    owner=repo_data.get("owner"),
                     name=repo_data.get("name"),
-                    stars=repo_data.get("stars"),
-                    forks=repo_data.get("forks"),
-                    watchers=repo_data.get("watchers"),
-                    isFork=repo_data.get("isFork"),
-                    isArchived=repo_data.get("isArchived"),
-                    languagesCount=repo_data.get("languagesCount"),
-                    topicCount=repo_data.get("topicCount"),
-                    diskUsageKb=repo_data.get("diskUsageKb"),
-                    pullRequests=repo_data.get("pullRequests"),
-                    issues=repo_data.get("issues"),
-                    description=repo_data.get("description"),
-                    primaryLanguage=primary_lang,
-                    createdAt=repo_data.get("createdAt"),
-                    pushedAt=repo_data.get("pushedAt"),
-                    defaultBranchCommitCount=repo_data.get("defaultBranchCommitCount"),
-                    license=repo_data.get("license"),
-                    assignableUserCount=repo_data.get("assignableUserCount"),
-                    codeOfConduct=repo_data.get("codeOfConduct"),
-                    forkingAllowed=repo_data.get("forkingAllowed"),
-                    nameWithOwner=repo_data.get("nameWithOwner"),
-                    parent=repo_data.get("parent"),
+                    stars=repo_data.get("stars") or 0,
+                    forks=repo_data.get("forks") or 0,
+                    watchers=repo_data.get("watchers") or 0,
+                    is_fork=repo_data.get("isFork") or False,
+                    is_archived=repo_data.get("isArchived") or False,
+                    language_count=repo_data.get("languageCount") or 0,
+                    topic_count=repo_data.get("topicCount") or 0,
+                    disk_usage_kb=repo_data.get("diskUsageKb") or 0,
+                    pull_requests=repo_data.get("pullRequests") or 0,
+                    issues=repo_data.get("issues") or 0,
+                    description=repo_data.get("description") or "",
+                    primary_language=repo_data.get("primaryLanguage") or "",
+                    created_at=repo_data.get("createdAt"),
+                    pushed_at=repo_data.get("pushedAt"),
+                    default_branch_commit_count=repo_data.get("defaultBranchCommitCount") or 0,
+                    license=repo_data.get("license") or "",
+                    assignable_user_count=repo_data.get("assignableUserCount") or 0,
+                    code_of_conduct=repo_data.get("codeOfConduct") or "",
+                    forking_allowed=repo_data.get("forkingAllowed") or False,
+                    name_with_owner=repo_data.get("nameWithOwner") or "",
+                    parent=repo_data.get("parent") or ""
                 )
                 repo.save()
 
                 for lang in repo_data.get("languages", []):
-                    lang_obj, _ = Language.objects.get_or_create(
-                        name=lang.get("name")
-                    )
+                    lang_obj, _ = Language.objects.get_or_create(name=lang.get("name") or "Unknown")
                     RepositoryLanguage.objects.create(
-                        repo=repo,
+                        repository=repo,
                         language=lang_obj,
-                        size=lang.get("size"),
+                        size=lang.get("size") or 0,
                     )
 
                 for topic in repo_data.get("topics", []):
-                    topic_obj, _ = Topic.objects.get_or_create(name=topic.get("topic"))
+                    topic_obj, _ = Topic.objects.get_or_create(name=topic.get("topic") or "Unknown")
                     TopicsStars.objects.create(
-                        repo=repo,
+                        repository=repo,
                         topic=topic_obj,
-                        stars=topic.get("stars"),
+                        stars=topic.get("stars") or 0,
                     )
 
-                repos.append(repo)
-
-                if len(repos) >= BATCH_SIZE:
-                    self.stdout.write(f"{len(repos)} repo import qilindi.")
-                    repos.clear()
-
         self.stdout.write(self.style.SUCCESS("Import tugadi"))
+
 
 # import json
 #
