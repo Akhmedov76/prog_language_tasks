@@ -22,39 +22,39 @@ class Command(BaseCommand):
             data = json.load(f)
             repos = []
 
-            for record in data:
-                owner, _ = Repository.objects.get_or_create(username=record.get("owner"))
+            for repo_data in data:
+                owner, _ = Repository.objects.get_or_create(username=repo_data.get("owner"))
                 primary_lang, _ = Language.objects.get_or_create(
-                    name=record.get("primaryLanguage")
+                    name=repo_data.get("primaryLanguage")
                 )
                 repo = Repository(
                     owner=owner,
-                    name=record.get("name"),
-                    stars=record.get("stars"),
-                    forks=record.get("forks"),
-                    watchers=record.get("watchers"),
-                    isFork=record.get("isFork"),
-                    isArchived=record.get("isArchived"),
-                    languagesCount=record.get("languagesCount"),
-                    topicCount=record.get("topicCount"),
-                    diskUsageKb=record.get("diskUsageKb"),
-                    pullRequests=record.get("pullRequests"),
-                    issues=record.get("issues"),
-                    description=record.get("description"),
+                    name=repo_data.get("name"),
+                    stars=repo_data.get("stars"),
+                    forks=repo_data.get("forks"),
+                    watchers=repo_data.get("watchers"),
+                    isFork=repo_data.get("isFork"),
+                    isArchived=repo_data.get("isArchived"),
+                    languagesCount=repo_data.get("languagesCount"),
+                    topicCount=repo_data.get("topicCount"),
+                    diskUsageKb=repo_data.get("diskUsageKb"),
+                    pullRequests=repo_data.get("pullRequests"),
+                    issues=repo_data.get("issues"),
+                    description=repo_data.get("description"),
                     primaryLanguage=primary_lang,
-                    createdAt=record.get("createdAt"),
-                    pushedAt=record.get("pushedAt"),
-                    defaultBranchCommitCount=record.get("defaultBranchCommitCount"),
-                    license=record.get("license"),
-                    assignableUserCount=record.get("assignableUserCount"),
-                    codeOfConduct=record.get("codeOfConduct"),
-                    forkingAllowed=record.get("forkingAllowed"),
-                    nameWithOwner=record.get("nameWithOwner"),
-                    parent=record.get("parent"),
+                    createdAt=repo_data.get("createdAt"),
+                    pushedAt=repo_data.get("pushedAt"),
+                    defaultBranchCommitCount=repo_data.get("defaultBranchCommitCount"),
+                    license=repo_data.get("license"),
+                    assignableUserCount=repo_data.get("assignableUserCount"),
+                    codeOfConduct=repo_data.get("codeOfConduct"),
+                    forkingAllowed=repo_data.get("forkingAllowed"),
+                    nameWithOwner=repo_data.get("nameWithOwner"),
+                    parent=repo_data.get("parent"),
                 )
                 repo.save()
 
-                for lang in record.get("languages", []):
+                for lang in repo_data.get("languages", []):
                     lang_obj, _ = Language.objects.get_or_create(
                         name=lang.get("name")
                     )
@@ -64,7 +64,7 @@ class Command(BaseCommand):
                         size=lang.get("size"),
                     )
 
-                for topic in record.get("topics", []):
+                for topic in repo_data.get("topics", []):
                     topic_obj, _ = Topic.objects.get_or_create(name=topic.get("topic"))
                     TopicsStars.objects.create(
                         repo=repo,
